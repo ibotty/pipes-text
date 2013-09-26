@@ -101,7 +101,7 @@ nextChar = go
         x <- next p
         case x of
             Left   r         -> return (Left r)
-            Right (text, p') -> case (T.uncons text) of
+            Right (text, p') -> case T.uncons text of
                 Nothing         -> go p'
                 Just (c, text') -> return (Right (c, yield text' >> p'))
 {-# INLINABLE nextChar #-}
@@ -120,7 +120,7 @@ null = P.all T.null
 {-# INLINEABLE null #-}
 
 length :: (Monad m, Num n) => Producer Text m () -> m n
-length = P.fold (\n t -> n + (fromIntegral $ T.length t)) 0 id
+length = P.fold (\n t -> n + fromIntegral (T.length t)) 0 id
 {-# INLINEABLE length #-}
 
 
@@ -147,7 +147,7 @@ toUpper = P.map T.toUpper
 foldl
     :: Monad m
     => (a -> Char -> a) -> a -> (a -> r) -> Producer Text m () -> m r
-foldl step begin done = P.fold (T.foldl' step) begin done
+foldl step = P.fold (T.foldl' step)
 {-# INLINEABLE foldl #-}
 
 concatMap :: Monad m => (Char -> Text) -> Pipe Text Text m ()
