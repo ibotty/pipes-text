@@ -220,28 +220,29 @@ drop = go
 
 
 takeWhile :: Monad m => (Char -> Bool) -> Pipe Text Text m ()
-takeWhile f = go
-  where go = do
-            text <- await
-            let (prefix,remainder) = T.span f text
-            yield prefix
-            if T.null remainder
-              then go
-              else return ()
+takeWhile f = do
+    text <- await
+    let (prefix,remainder) = T.span f text
+    yield prefix
+    if T.null remainder
+      then takeWhile f
+      else return ()
 {-# INLINEABLE takeWhile #-}
 
 dropWhile :: Monad m => (Char -> Bool) -> Pipe Text Text m r
-dropWhile f = go
-  where go = do
-            text <- await
-            let remainder = T.dropWhile f text
-            if T.null remainder
-              then go
-              else do
-                  yield remainder
-                  cat
+dropWhile f = do
+    text <- await
+    let remainder = T.dropWhile f text
+    if T.null remainder
+      then dropWhile f
+      else do
+          yield remainder
+          cat
 {-# INLINEABLE dropWhile #-}
 
 stripStart :: Monad m => Pipe Text Text m r
-stripStart = P.map T.stripStart
+stripStart = do
+    text <- await
+    yield $ T.stripStart text
+    cat
 {-# INLINEABLE stripStart #-}
