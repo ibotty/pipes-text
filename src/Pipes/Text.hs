@@ -242,7 +242,9 @@ dropWhile f = do
 
 stripStart :: Monad m => Pipe Text Text m r
 stripStart = do
-    text <- await
-    yield $ T.stripStart text
-    cat
+    chunk <- await
+    let text = T.stripStart chunk
+    if T.null text
+      then stripStart
+      else cat
 {-# INLINEABLE stripStart #-}
