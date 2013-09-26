@@ -52,12 +52,18 @@ import Prelude hiding
 import qualified Data.Text as T
 import qualified Data.ByteString as B
 import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Internal as TLI
 import qualified Data.Text.Encoding as TE
 import qualified Pipes.Prelude as P
 
-
-fromLazy :: TL.Text -> Producer Text m r
-fromLazy = undefined
+fromLazy :: Monad m => TL.Text -> Producer Text m ()
+fromLazy text = do
+    case text of
+        TLI.Empty -> return ()
+        TLI.Chunk chunk t' -> do
+            yield chunk
+            fromLazy t'
+{-# INLINEABLE fromLazy #-}
 
 -- | Transform a Pipe of 'ByteString's expected to be UTF-8 encoded
 -- into a Pipe of Text
