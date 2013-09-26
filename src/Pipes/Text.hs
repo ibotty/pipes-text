@@ -1,5 +1,6 @@
 module Pipes.Text
-  ( decodeUtf8
+  ( fromLazy
+  , decodeUtf8
   , encodeUtf8
   , pack
   , unpack
@@ -17,6 +18,7 @@ module Pipes.Text
   , minimum
   , scanl
   , replicate
+  , replicateLazy
   , take
   , takeWhile
   , drop
@@ -48,8 +50,13 @@ import Prelude hiding
   , null
   )
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Encoding as TE
 import qualified Pipes.Prelude as P
+
+
+fromLazy :: TL.Text -> Producer Text m r
+fromLazy = undefined
 
 -- | Transform a Pipe of 'ByteString's expected to be UTF-8 encoded
 -- into a Pipe of Text
@@ -179,8 +186,12 @@ scanl step = go
 -- generating
 ------------
 
-replicate :: Monad m => Int -> Text -> Producer Text m ()
-replicate n text = P.replicateM n (return text)
+replicateLazy :: (Monad m, Integral n) => n -> TL.Text -> Producer Text m ()
+replicateLazy n text = fromLazy (TL.replicate (fromIntegral n) text)
+{-# INLINEABLE replicateLazy #-}
+
+replicate :: (Monad m, Integral n) => n -> Text -> Producer Text m ()
+replicate n text = fromLazy (TL.replicate (fromIntegral n) (TL.fromStrict text))
 {-# INLINEABLE replicate #-}
 
 
