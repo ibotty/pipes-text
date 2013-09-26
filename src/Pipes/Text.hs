@@ -50,6 +50,7 @@ import Prelude hiding
   , null
   )
 import qualified Data.Text as T
+import qualified Data.ByteString as B
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Encoding as TE
 import qualified Pipes.Prelude as P
@@ -60,13 +61,23 @@ fromLazy = undefined
 
 -- | Transform a Pipe of 'ByteString's expected to be UTF-8 encoded
 -- into a Pipe of Text
-decodeUtf8 :: Monad m => Pipe ByteString Text m r
+decodeUtf8
+  :: Monad m
+  => Producer ByteString m r -> Producer Text m (Producer ByteString m r)
 decodeUtf8 = go TE.streamDecodeUtf8
-  where go enc = do
-            chunk <- await
-            let TE.Some text _ enc' = enc chunk
-            yield text
-            go enc'
+  where go dec p = do
+            x <- lift (next p)
+            case x of
+                Left r -> return (return r)
+                Right (chunk, p') -> do
+                    let TE.Some text l dec' = dec chunk
+                    if B.null l
+                      then do
+                          yield text
+                          go dec' p'
+                      else return $ do
+                          yield l
+                          p'
 {-# INLINEABLE decodeUtf8 #-}
 
 -- | Transform a Pipe of 'Text' into a Pipe of 'ByteString's using UTF-8
