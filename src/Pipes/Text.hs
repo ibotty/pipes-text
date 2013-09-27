@@ -31,7 +31,7 @@ import Control.Monad (liftM)
 import Data.ByteString (ByteString)
 import Data.Functor.Identity (Identity)
 import Data.Text (Text)
-import Pipes
+import Pipes (Pipe, Producer, await, cat, lift, next, yield)
 import Prelude hiding
   ( all
   , any
