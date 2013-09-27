@@ -57,12 +57,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Pipes.Prelude as P
 
 fromLazy :: Monad m => TL.Text -> Producer Text m ()
-fromLazy text = do
-    case text of
-        TLI.Empty -> return ()
-        TLI.Chunk chunk t' -> do
-            yield chunk
-            fromLazy t'
+fromLazy = TLI.foldrChunks (\txt producer -> yield txt >> producer) (return ())
 {-# INLINEABLE fromLazy #-}
 
 toLazy :: Producer Text Identity () -> TL.Text
