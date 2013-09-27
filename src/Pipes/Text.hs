@@ -1,5 +1,7 @@
 module Pipes.Text
   ( fromLazy
+  , toLazy
+  , toLazyM
   , decodeUtf8
   , encodeUtf8
   , pack
@@ -28,7 +30,9 @@ module Pipes.Text
   , P.replicateM
   ) where
 
+import Control.Monad (liftM)
 import Data.ByteString (ByteString)
+import Data.Functor.Identity (Identity)
 import Data.Text (Text)
 import Pipes
 import Prelude hiding
@@ -64,6 +68,14 @@ fromLazy text = do
             yield chunk
             fromLazy t'
 {-# INLINEABLE fromLazy #-}
+
+toLazy :: Producer Text Identity () -> TL.Text
+toLazy = TL.fromChunks . P.toList
+{-# INLINEABLE toLazy #-}
+
+toLazyM :: Monad m => Producer Text m () -> m TL.Text
+toLazyM = liftM TL.fromChunks . P.toListM
+{-# INLINEABLE toLazyM #-}
 
 -- | Transform a Pipe of 'ByteString's expected to be UTF-8 encoded
 -- into a Pipe of Text
