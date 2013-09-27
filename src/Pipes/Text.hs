@@ -19,15 +19,12 @@ module Pipes.Text
   , maximum
   , minimum
   , scanl
-  , replicate
-  , replicateLazy
   , take
   , takeWhile
   , drop
   , dropWhile
   , stripStart
   , nextChar
-  , P.replicateM
   ) where
 
 import Control.Monad (liftM)
@@ -45,7 +42,6 @@ import Prelude hiding
   , foldl
   , head
   , length
-  , replicate
   , scanl
   , take
   , takeWhile
@@ -209,20 +205,6 @@ scanl step = go
             yield text'
             go char'
 {-# INLINEABLE scanl #-}
-
-
-------------
--- generating
-------------
-
-replicateLazy :: (Monad m, Integral n) => n -> TL.Text -> Producer Text m ()
-replicateLazy n text = fromLazy (TL.replicate (fromIntegral n) text)
-{-# INLINEABLE replicateLazy #-}
-
-replicate :: (Monad m, Integral n) => n -> Text -> Producer Text m ()
-replicate n text = fromLazy (TL.replicate (fromIntegral n) (TL.fromStrict text))
-{-# INLINEABLE replicate #-}
-
 
 ------------
 -- substrings
